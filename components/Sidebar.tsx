@@ -29,9 +29,10 @@ interface SidebarProps {
   onToggle: () => void;
   currentUser: User;
   onSwitchUser: () => void;
+  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isCollapsed, onToggle, currentUser, onSwitchUser }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isCollapsed, onToggle, currentUser, onSwitchUser, onLogout }) => {
   // Define all possible menu items
   const allMenuItems = [
     { id: ViewState.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
@@ -173,7 +174,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isCollapsed,
           <span className="whitespace-nowrap">Switch Role</span>
         </button>
 
-        <button className={`w-full flex items-center justify-center rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-red-900/50 text-xs text-slate-400 hover:text-red-400 transition-all font-medium uppercase tracking-wider ${isCollapsed ? 'h-0 opacity-0 overflow-hidden border-0' : 'py-2 space-x-2'}`}>
+        <button 
+          onClick={onLogout}
+          className={`w-full flex items-center justify-center rounded bg-slate-900 hover:bg-red-900/20 border border-slate-700 hover:border-red-600 text-xs text-slate-400 hover:text-red-400 transition-all font-medium uppercase tracking-wider ${isCollapsed ? 'h-0 opacity-0 overflow-hidden border-0' : 'py-2 space-x-2'}`}
+          title="Sign out from application"
+        >
           <LogOut className="w-3 h-3" />
           <span className="whitespace-nowrap">Sign Out</span>
         </button>

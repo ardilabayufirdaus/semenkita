@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
+import Login from './components/Login';
 import StockForecast from './components/StockForecast';
 import LogisticsPerformance from './components/LogisticsPerformance';
 import PackerPerformance from './components/PackerPerformance';
@@ -12,6 +12,41 @@ import GlobalSearch from './components/GlobalSearch';
 import Notifications from './components/Notifications';
 import { ViewState, User } from './types';
 import { Calendar, ChevronRight, Lock, Activity } from 'lucide-react';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-slate-100">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
+            <p className="text-slate-600 mb-2">{this.state.error?.message}</p>
+            <p className="text-sm text-slate-500">{this.state.error?.stack}</p>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 // Industrial Card Component (SEMENKITA THEME)
 const StatCard: React.FC<{ 
@@ -121,9 +156,29 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
 
-  // Keyboard shortcut listener for Global Search (handled inside component mostly, but good for context)
+  // Load auth state from localStorage
   useEffect(() => {
+    const savedAuth = localStorage.getItem('semenkita_auth');
+    if (savedAuth) {
+      try {
+        const { email, userIndex } = JSON.parse(savedAuth);
+        setLoginEmail(email);
+        setCurrentUserIndex(userIndex);
+        setIsAuthenticated(true);
+      } catch (e) {
+        // Invalid saved auth, user needs to login again
+        localStorage.removeItem('semenkita_auth');
+      }
+    }
+  }, []);
+
+  // Keyboard shortcut listener for Global Search
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
@@ -133,13 +188,49 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isAuthenticated]);
 
   const currentUser = SIMULATED_USERS[currentUserIndex];
 
+  const handleLogin = (email: string, password: string) => {
+    // Demo authentication - accept any email with password123
+    if (password === 'password123') {
+      // Find user by email or use random user
+      let userIndex = SIMULATED_USERS.findIndex(u => u.email === email);
+      if (userIndex === -1) {
+        // If email doesn't match, use first admin user
+        userIndex = 0;
+      }
+
+      setLoginEmail(email);
+      setCurrentUserIndex(userIndex);
+      setIsAuthenticated(true);
+
+      // Save to localStorage
+      localStorage.setItem('semenkita_auth', JSON.stringify({ email, userIndex }));
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setLoginEmail('');
+    setCurrentView(ViewState.DASHBOARD);
+    localStorage.removeItem('semenkita_auth');
+  };
+
   const handleSwitchUser = () => {
     setCurrentUserIndex((prev) => (prev + 1) % SIMULATED_USERS.length);
+    // Update localStorage with new user
+    localStorage.setItem('semenkita_auth', JSON.stringify({ 
+      email: loginEmail, 
+      userIndex: (currentUserIndex + 1) % SIMULATED_USERS.length 
+    }));
   };
+
+  // Show login screen if not authenticated
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   const renderContent = () => {
     switch (currentView) {
@@ -156,7 +247,6 @@ const App: React.FC = () => {
       case ViewState.MASTER_DATA:
         return <MasterData />;
       case ViewState.USER_MANAGEMENT:
-        // Access Control Check
         if (currentUser.role !== 'Admin') {
             return (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400">
@@ -188,6 +278,7 @@ const App: React.FC = () => {
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         currentUser={currentUser}
         onSwitchUser={handleSwitchUser}
+        onLogout={handleLogout}
       />
       
       <main 
@@ -235,4 +326,10 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+const AppWithBoundary = () => (
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);
+
+export default AppWithBoundary;
