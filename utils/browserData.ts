@@ -19,9 +19,9 @@ export const clearAllBrowserData = async () => {
     // Clear Cache API (Service Workers)
     await clearCacheAPI();
 
-    console.log('All browser data cleared successfully');
+    console.log("All browser data cleared successfully");
   } catch (error) {
-    console.error('Error clearing browser data:', error);
+    console.error("Error clearing browser data:", error);
   }
 };
 
@@ -29,18 +29,18 @@ export const clearAllBrowserData = async () => {
  * Clear all cookies by setting expiration to past date
  */
 export const clearAllCookies = () => {
-  document.cookie.split(';').forEach((cookie) => {
-    const eqPos = cookie.indexOf('=');
+  document.cookie.split(";").forEach((cookie) => {
+    const eqPos = cookie.indexOf("=");
     const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-    
+
     // Delete from root
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    
+
     // Delete from all possible paths
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
   });
 
-  console.log('All cookies cleared');
+  console.log("All cookies cleared");
 };
 
 /**
@@ -49,9 +49,11 @@ export const clearAllCookies = () => {
 export const clearIndexedDB = async (): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
-      if ('indexedDB' in window) {
-        const databases = window.indexedDB.databases ? window.indexedDB.databases() : Promise.resolve([]);
-        
+      if ("indexedDB" in window) {
+        const databases = window.indexedDB.databases
+          ? window.indexedDB.databases()
+          : Promise.resolve([]);
+
         Promise.resolve(databases).then((dbs: any[]) => {
           dbs.forEach((db) => {
             try {
@@ -66,7 +68,7 @@ export const clearIndexedDB = async (): Promise<void> => {
         resolve();
       }
     } catch (error) {
-      console.warn('Error clearing IndexedDB:', error);
+      console.warn("Error clearing IndexedDB:", error);
       resolve(); // Don't reject, just continue
     }
   });
@@ -77,15 +79,15 @@ export const clearIndexedDB = async (): Promise<void> => {
  */
 export const clearCacheAPI = async (): Promise<void> => {
   try {
-    if ('caches' in window) {
+    if ("caches" in window) {
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames.map((cacheName) => caches.delete(cacheName))
       );
-      console.log('Cache API cleared');
+      console.log("Cache API cleared");
     }
   } catch (error) {
-    console.warn('Error clearing Cache API:', error);
+    console.warn("Error clearing Cache API:", error);
   }
 };
 
@@ -102,10 +104,10 @@ export const clearCookie = (name: string) => {
  */
 export const getAllCookies = (): Record<string, string> => {
   const cookies: Record<string, string> = {};
-  document.cookie.split(';').forEach((cookie) => {
-    const [key, value] = cookie.split('=').map((c) => c.trim());
+  document.cookie.split(";").forEach((cookie) => {
+    const [key, value] = cookie.split("=").map((c) => c.trim());
     if (key) {
-      cookies[key] = decodeURIComponent(value || '');
+      cookies[key] = decodeURIComponent(value || "");
     }
   });
   return cookies;

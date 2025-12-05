@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { LogIn, Lock, Mail, Eye, EyeOff, Zap } from 'lucide-react';
+import React, { useState } from "react";
+import { LogIn, Lock, Mail, Eye, EyeOff, Zap } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface LoginProps {
   onLogin: (email: string, password: string) => void;
@@ -7,22 +8,23 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin, isLoading = false }) => {
-  const [email, setEmail] = useState('admin@semenkita.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState("admin@semenkita.com");
+  const [password, setPassword] = useState("password123");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!email.trim()) {
-      setError('Email is required');
+      setError("Email is required");
       return;
     }
 
     if (!password) {
-      setError('Password is required');
+      setError("Password is required");
       return;
     }
 
@@ -46,15 +48,23 @@ const Login: React.FC<LoginProps> = ({ onLogin, isLoading = false }) => {
               <Zap className="w-6 h-6 text-white fill-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white tracking-tight uppercase">SEMENKITA</h1>
-              <p className="text-xs font-bold text-cyan-500 tracking-widest">LOGISTICS PLATFORM</p>
+              <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+                SEMENKITA
+              </h1>
+              <p className="text-xs font-bold text-cyan-500 tracking-widest">
+                LOGISTICS PLATFORM
+              </p>
             </div>
           </div>
 
           {/* Form Title */}
           <div className="text-center mb-8">
-            <h2 className="text-xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-sm text-slate-400">Sign in to your account to continue</p>
+            <h2 className="text-xl font-bold text-white mb-2">
+              {t("welcome_back")}
+            </h2>
+            <p className="text-sm text-slate-400">
+              {t("sign_in")} {t("semenkita")}
+            </p>
           </div>
 
           {/* Error Message */}
@@ -69,7 +79,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, isLoading = false }) => {
             {/* Email Input */}
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                Email Address
+                {t("email")}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3.5 w-4 h-4 text-slate-500" />
@@ -86,12 +96,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, isLoading = false }) => {
             {/* Password Input */}
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                Password
+                {t("password")}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3.5 w-4 h-4 text-slate-500" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••"
@@ -102,16 +112,18 @@ const Login: React.FC<LoginProps> = ({ onLogin, isLoading = false }) => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-3.5 text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             {/* Demo Credentials Note */}
             <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
-              <p className="text-xs text-cyan-400">
-                <span className="font-bold">Demo:</span> Use any email with password "password123" or click login directly
-              </p>
+              <p className="text-xs text-cyan-400">{t("demo_credentials")}</p>
             </div>
 
             {/* Submit Button */}
@@ -123,12 +135,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, isLoading = false }) => {
               {isLoading ? (
                 <>
                   <div className="animate-spin">⚙️</div>
-                  Signing in...
+                  {t("signing_in")}
                 </>
               ) : (
                 <>
                   <LogIn className="w-4 h-4" />
-                  Sign In
+                  {t("sign_in")}
                 </>
               )}
             </button>
