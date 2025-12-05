@@ -12,6 +12,7 @@ import GlobalSearch from './components/GlobalSearch';
 import Notifications from './components/Notifications';
 import { ViewState, User } from './types';
 import { Calendar, ChevronRight, Lock, Activity } from 'lucide-react';
+import { clearAllBrowserData } from './utils/browserData';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -211,11 +212,13 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsAuthenticated(false);
     setLoginEmail('');
     setCurrentView(ViewState.DASHBOARD);
-    localStorage.removeItem('semenkita_auth');
+    
+    // Clear all browser data
+    await clearAllBrowserData();
   };
 
   const handleSwitchUser = () => {

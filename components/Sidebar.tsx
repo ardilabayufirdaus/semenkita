@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
   TrendingUp, 
@@ -18,7 +18,8 @@ import {
   Shield,
   Briefcase,
   Globe,
-  Zap // Added Zap icon for the logo
+  Zap, // Added Zap icon for the logo
+  AlertCircle
 } from 'lucide-react';
 import { ViewState, User, UserRole } from '../types';
 
@@ -33,6 +34,22 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isCollapsed, onToggle, currentUser, onSwitchUser, onLogout }) => {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    await onLogout();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
+  };
+
   // Define all possible menu items
   const allMenuItems = [
     { id: ViewState.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
@@ -175,16 +192,67 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isCollapsed,
         </button>
 
         <button 
-          onClick={onLogout}
-          className={`w-full flex items-center justify-center rounded bg-slate-900 hover:bg-red-900/20 border border-slate-700 hover:border-red-600 text-xs text-slate-400 hover:text-red-400 transition-all font-medium uppercase tracking-wider ${isCollapsed ? 'h-0 opacity-0 overflow-hidden border-0' : 'py-2 space-x-2'}`}
+          onClick={handleLogoutClick}
+          disabled={isLoggingOut}
+          className={`w-full flex items-center justify-center rounded bg-slate-900 hover:bg-red-900/20 border border-slate-700 hover:border-red-600 text-xs text-slate-400 hover:text-red-400 transition-all font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed ${isCollapsed ? 'h-0 opacity-0 overflow-hidden border-0' : 'py-2 space-x-2'}`}
           title="Sign out from application"
         >
           <LogOut className="w-3 h-3" />
-          <span className="whitespace-nowrap">Sign Out</span>
+          <span className="whitespace-nowrap">{isLoggingOut ? 'Signing Out...' : 'Sign Out'}</span>
         </button>
+
+        {/* Logout Confirmation Modal */}
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl max-w-sm w-full mx-4 p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center mr-3">
+                  <AlertCircle className="w-6 h-6 text-red-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Sign Out</h3>
+              </div>
+              
+              <p className="text-slate-300 mb-4">
+                Are you sure you want to sign out? All browser cookies, cache, and local data will be cleared for security.
+              </p>
+
+              <p className="text-xs text-slate-500 mb-6 bg-slate-800 p-3 rounded border border-slate-700">
+                <span className="font-bold text-slate-400">Security Notice:</span> This will clear all cookies, localStorage, session storage, IndexedDB, and service worker caches.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelLogout}
+                  disabled={isLoggingOut}
+                  className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded font-medium transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  disabled={isLoggingOut}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <div className="animate-spin text-sm">⚙️</div>
+                      Signing Out...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );
 };
 
 export default Sidebar;
+
